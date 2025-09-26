@@ -1,0 +1,42 @@
+﻿@model IEnumerable<Shopping_Cart.Areas.Admin.Controllers.UserViewModel>
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<h2>Manage Users</h2>
+
+<p>
+    <a asp-area="Admin" asp-controller="Users" asp-action="Create" class="btn btn-success">Add New User</a>
+</p>
+
+<table class="table table-hover table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th style="width:130px"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@(string.IsNullOrWhiteSpace(user.Name) ? "—" : user.Name)</td>
+                <td>@user.Email</td>
+                <td>@(string.IsNullOrWhiteSpace(user.Role) ? "—" : user.Role)</td>  
+                <td>
+                    <form asp-area="Admin" asp-controller="Users" asp-action="Delete" method="post" style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@user.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?');">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr><td colspan="4" class="text-center text-muted">No users found</td></tr>
+        }
+    </tbody>
+</table>

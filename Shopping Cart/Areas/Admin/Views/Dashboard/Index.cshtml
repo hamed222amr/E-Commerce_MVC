@@ -1,0 +1,200 @@
+﻿@using System.Text.Json
+@model ShoppingCartApp.ViewModels.AdminDashboardViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Admin Dashboard</h2>
+        <div>
+            <a class="btn btn-outline-primary" asp-area="Admin" asp-controller="Products" asp-action="Index">Manage Products</a>
+            <a class="btn btn-outline-primary" asp-area="Admin" asp-controller="Categories" asp-action="Index">Manage Categories</a>
+            <a class="btn btn-outline-primary" asp-area="Admin" asp-controller="Orders" asp-action="Index">Manage Orders</a>
+            <a class="btn btn-outline-primary" asp-area="Admin" asp-controller="Users" asp-action="Index">Manage Users</a>
+
+        </div>
+    </div>
+    <br />
+    <!-- top summary cards -->
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Users</small>
+                    <h3>@Model.UsersCount</h3>
+                    <div class="text-muted small">Registered users</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Orders</small>
+                    <h3>@Model.OrdersCount</h3>
+                    <div class="text-muted small">Total orders</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">Revenue</small>
+                    <h3>@String.Format("{0:C}", Model.TotalRevenue)</h3>
+                    <div class="text-muted small">Total revenue</div>
+                </div>
+            </div>
+        </div>
+
+       
+    </div>
+
+    <div class="row mt-4 g-3">
+        <!-- revenue chart -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">Revenue (Last 7 days)</div>
+                <div class="card-body">
+                    <canvas id="revenueChart" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- top products -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">Top Products</div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>Qty Sold</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in Model.TopProducts)
+                            {
+                                <tr>
+                                    <td>@p.Name</td>
+                                    <td>@p.SoldQuantity</td>
+                                    <td>@String.Format("{0:C}", p.Revenue)</td>
+                                </tr>
+                            }
+                            @if (!Model.TopProducts.Any())
+                            {
+                                <tr><td colspan="3" class="text-center text-muted">No products yet</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 g-3">
+        <!-- recent orders -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Recent Orders</span>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>User</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var o in Model.RecentOrders)
+                            {
+                                <tr>
+                                    <td>@o.Id</td>
+                                    <td>@o.UserEmail</td>
+                                    <td>@o.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@String.Format("{0:C}", o.TotalPrice)</td>
+                                    <td><span class="badge bg-info text-white">@o.Status</span></td>
+                                </tr>
+                            }
+                            @if (!Model.RecentOrders.Any())
+                            {
+                                <tr><td colspan="5" class="text-center text-muted">No orders yet</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- recent users -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">Recent Users</div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var u in Model.RecentUsers)
+                        {
+                            <li class="mb-2">
+                                <div><strong>@u.Email</strong></div>
+                                <div class="small text-muted">@u.RegisteredAt.ToLocalTime().ToString("yyyy-MM-dd")</div>
+                            </li>
+                        }
+                        @if (!Model.RecentUsers.Any())
+                        {
+                            <li class="text-center text-muted">No users yet</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- scripts: Chart.js and init -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    (function () {
+        const labels = @Html.Raw(JsonSerializer.Serialize(Model.ChartLabels.Select(d => d.ToString("yyyy-MM-dd"))));
+        const data = @Html.Raw(JsonSerializer.Serialize(Model.ChartValues));
+
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Revenue',
+                    data: data,
+                    fill: true,
+                    tension: 0.3,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.15)',
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value); }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    })();
+</script>

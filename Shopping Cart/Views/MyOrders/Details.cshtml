@@ -1,0 +1,41 @@
+﻿@model ShoppingCartApp.Models.Order
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<h2>Order Details (ID: @Model.Id)</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p><strong>Total Price:</strong> @String.Format("{0:C}", Model.TotalPrice)</p>
+        <p><strong>Status:</strong> <span class="badge bg-info text-white">@Model.Status</span></p>
+        <p><strong>Created At:</strong> @Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</p>
+    </div>
+</div>
+
+<h4>Items</h4>
+<table class="table table-hover table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.Product?.Name</td>
+                <td>@item.Quantity</td>
+                <td>@String.Format("{0:C}", item.UnitPrice)</td>
+            </tr>
+        }
+        @if (Model.Items == null || !Model.Items.Any())
+        {
+            <tr><td colspan="3" class="text-center text-muted">No items for this order</td></tr>
+        }
+    </tbody>
+</table>
+
+<a asp-controller="MyOrders" asp-action="Index" class="btn btn-secondary">Back to My Orders</a>

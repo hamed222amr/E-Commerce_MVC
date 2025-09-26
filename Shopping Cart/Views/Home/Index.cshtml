@@ -1,0 +1,37 @@
+﻿@model IEnumerable<ShoppingCartApp.Models.Product>
+@{
+    ViewData["Title"] = "Home";
+}
+
+<h2>Our Products</h2>
+<br />
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-3">
+            <div class="card mb-3 h-100 shadow-sm">
+                
+                <a asp-action="Details" asp-route-id="@item.Id">
+                    <img src="@item.ImageUrl" class="card-img-top" alt="@item.Name" />
+                </a>
+                <div class="card-body">
+                    <h5 class="card-title">@item.Name</h5>
+                    <p class="text-muted">@item.Price $</p>
+
+                    <p class="text-muted small">
+                        <strong>Available:</strong> @item.Stock in stock
+                    </p>
+
+                    
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary w-100 mb-2">
+                        View Details
+                    </a>
+
+                    <a asp-controller="Cart" asp-action="AddToCart" asp-route-id="@item.Id" class="btn btn-primary w-100">
+                        Add to Cart
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
